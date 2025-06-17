@@ -12,4 +12,5 @@
     <color name="home_page_green">#34C759</color>
     <color name="home_page_text_white">#FFFFFF</color>
     <color name="home_page_bar_gray">#8E8E93</color>
+    <color name="text_secondary_dark">#8E8E93</color>
 </resources>
