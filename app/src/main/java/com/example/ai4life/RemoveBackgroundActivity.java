@@ -152,14 +152,6 @@ public class RemoveBackgroundActivity extends AppCompatActivity {
     }
 
     private void uploadImageAndRemoveBackground(File imageFile) {
-        if (REMOVE_BG_API_KEY.equals("YOUR_REMOVEBG_API_KEY_HERE")) {
-            Toast.makeText(this, "Lỗi: Vui lòng thay thế YOUR_REMOVEBG_API_KEY_HERE bằng API Key của bạn.", Toast.LENGTH_LONG).show();
-            if (imageFile != null && imageFile.exists()) {
-                imageFile.delete();
-            }
-            return;
-        }
-
         Toast.makeText(this, "Đang tải ảnh lên và xóa nền, vui lòng chờ...", Toast.LENGTH_LONG).show();
 
         RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
