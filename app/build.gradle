@@ -37,4 +37,10 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    // Thêm các thư viện sau:
+    // OkHttp (cho các yêu cầu HTTP)
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    // Glide (để tải và hiển thị ảnh, rất hiệu quả)
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 }
