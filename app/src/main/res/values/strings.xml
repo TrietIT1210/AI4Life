@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">AI4Life</string>
+    <string name="createImg_title">Tạo ảnh với AI</string>
+    <string name="createImg_desc">Tạo ra nghệ thuật chỉ với vời dòng lệnh</string>
+    <string name="removeBg_title">Xóa phông nền</string>
+    <string name="removeBg_desc">Xóa nền hình ảnh siêu chất lượng</string>
+    <string name="createAnime_title">Anime cực chất</string>
+    <string name="createMeme_title">Tạo meme siêu dị</string>
+    <string name="createMeme_desc">Lưu trữ meme cực kì hài hước</string>
+    <string name="textView_welcomeText">Chào mừng bạn trở lại</string>
+    <string name="textView_requestRemain">Lượt request còn lại của bạn</string>
 </resources>

@@ -2,9 +2,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Màu khi item được chọn (active) -->
-    <item android:state_checked="true" android:color="@color/white" />
-
-    <!-- Màu mặc định khi item không được chọn (inactive) -->
-    <item android:color="@color/text_secondary_dark" />
+    <item android:color="@color/white" />
 
 </selector>

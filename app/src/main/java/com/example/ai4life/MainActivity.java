@@ -8,24 +8,24 @@ import androidx.cardview.widget.CardView;
 
 
 public class MainActivity extends AppCompatActivity {
-    CardView createImg;
+    CardView cardCreateImage;
+    CardView cardRemoveBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        createImg = findViewById(R.id.createImg);
-        createImg.setOnClickListener(new View.OnClickListener() {
+        cardCreateImage = findViewById(R.id.cardCreateImage);
+        cardCreateImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, CreateImgActivity.class);
                 startActivity(intent);
             }
         });
-        CardView removeBgCard = findViewById(R.id.card_remove_background);
-
-        removeBgCard.setOnClickListener(new View.OnClickListener() {
+        cardRemoveBackground = findViewById(R.id.cardRemoveBackground);
+        cardRemoveBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, RemoveBackgroundActivity.class);
