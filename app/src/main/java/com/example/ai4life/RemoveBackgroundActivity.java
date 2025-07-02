@@ -55,7 +55,7 @@ public class RemoveBackgroundActivity extends AppCompatActivity {
             return insets;
         });
 
-        videoView = findViewById(R.id.videoView2);
+        videoView = findViewById(R.id.videoView);
         btnUploadImage = findViewById(R.id.btnUploadImage);
         btnBackToHomePage = findViewById(R.id.btnBackToHomePage);
 
