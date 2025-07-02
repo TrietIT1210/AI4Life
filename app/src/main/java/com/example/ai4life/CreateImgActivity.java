@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
 import android.content.ContentResolver;
@@ -40,6 +41,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -61,23 +66,52 @@ public class CreateImgActivity extends AppCompatActivity {
     private ExecutorService executorService;
     private Handler mainHandler;
 
+    private ViewPager2 exampleImagesViewPager;
+    private NewsAdapter exampleImagesAdapter;
+    private List<NewsItem> exampleImageList;
+    private Timer slideTimer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_img_activity);
         // Ánh xạ các thành phần UI
-        btnFetchImage = findViewById(R.id.btnFetchImage);
-        btnSave = findViewById(R.id.saveBtn);
-        imageView = findViewById(R.id.imageView);
-        progressBar = findViewById(R.id.progressBar);
-        tvStatus = findViewById(R.id.tvStatus);
-        etPrompt = findViewById(R.id.etPrompt);
+        btnFetchImage = findViewById(R.id.btnFetchImg);
+        btnSave = findViewById(R.id.btnSaveImg);
+        imageView = findViewById(R.id.ivPicture);
+        progressBar = findViewById(R.id.pbCreateImg);
+        tvStatus = findViewById(R.id.tvStatusCreateImg);
+        etPrompt = findViewById(R.id.etPromptCreateImg);
+        exampleImagesViewPager = findViewById(R.id.exampleImagesViewPager);
 
         client = new OkHttpClient();
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
 
         btnSave.setEnabled(false);
+
+        exampleImageList = new ArrayList<>();
+        exampleImageList.add(new NewsItem("Một con mèo phi hành gia trên sao hỏa", "https://picsum.photos/800/400?random=4"));
+        exampleImageList.add(new NewsItem("Rừng cây phát sáng vào ban đêm", "https://picsum.photos/800/400?random=5"));
+        exampleImageList.add(new NewsItem("Thành phố tương lai dưới nước", "https://picsum.photos/800/400?random=6"));
+        exampleImageList.add(new NewsItem("Robot tự học vẽ tranh như Picasso", "https://picsum.photos/800/400?random=7"));
+        exampleImageList.add(new NewsItem("Trạm không gian quay quanh sao Thổ", "https://picsum.photos/800/400?random=8"));
+        exampleImageList.add(new NewsItem("AI phát hiện sinh vật biển chưa từng thấy", "https://picsum.photos/800/400?random=9"));
+        exampleImageList.add(new NewsItem("Người máy nấu ăn 5 món trong 10 phút", "https://picsum.photos/800/400?random=10"));
+        exampleImageList.add(new NewsItem("Ngôi làng nổi trên mây", "https://picsum.photos/800/400?random=11"));
+        exampleImageList.add(new NewsItem("Cửa hàng ảo dùng kính AR đầu tiên", "https://picsum.photos/800/400?random=12"));
+        exampleImageList.add(new NewsItem("Khám phá khu rừng số hóa bởi drone", "https://picsum.photos/800/400?random=13"));
+        exampleImageList.add(new NewsItem("Ô tô bay đầu tiên được thử nghiệm", "https://picsum.photos/800/400?random=14"));
+        exampleImageList.add(new NewsItem("Trí tuệ nhân tạo chơi đàn cổ Việt Nam", "https://picsum.photos/800/400?random=15"));
+        exampleImageList.add(new NewsItem("Kính thực tế ảo thay thế màn hình máy tính", "https://picsum.photos/800/400?random=16"));
+
+
+        exampleImagesAdapter = new NewsAdapter(exampleImageList);
+        exampleImagesViewPager.setAdapter(exampleImagesAdapter);
+
+        // Bắt đầu tự động trượt
+        startAutoSlider();
+
         btnFetchImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,97 +190,125 @@ public class CreateImgActivity extends AppCompatActivity {
         }
     }
     private void fetchImage() {
-        // Lấy prompt từ EditText
         String prompt = etPrompt.getText().toString().trim();
-
-        // Kiểm tra nếu prompt rỗng
         if (TextUtils.isEmpty(prompt)) {
             Toast.makeText(this, "Vui lòng nhập mô tả ảnh!", Toast.LENGTH_SHORT).show();
-            return; // Dừng lại nếu prompt rỗng
+            return;
         }
 
-        // Ẩn ảnh cũ và hiển thị ProgressBar
+        // --- SỬA ĐỔI: Quản lý giao diện ---
+        // Dừng và ẩn slideshow
+        if (slideTimer != null) {
+            slideTimer.cancel();
+            slideTimer = null;
+        }
+        exampleImagesViewPager.setVisibility(View.GONE);
+
+        // Ẩn ảnh cũ (nếu có) và hiển thị ProgressBar
         imageView.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
         tvStatus.setVisibility(View.VISIBLE);
-        tvStatus.setText("Đang tạo ảnh với prompt:\n\"" + prompt + "\""); // Hiển thị prompt đang dùng
-        btnFetchImage.setEnabled(false); // Tắt nút để tránh click liên tục
-        etPrompt.setEnabled(false); // Tắt EditText khi đang xử lý
+        tvStatus.setText("Đang tạo ảnh với prompt:\n\"" + prompt + "\"");
+
+        // Vô hiệu hóa các nút
+        btnFetchImage.setEnabled(false);
+        etPrompt.setEnabled(false);
         btnSave.setEnabled(false);
 
-        // Chạy tác vụ mạng trên luồng nền
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                RequestBody requestBody = new MultipartBody.Builder()
-                        .setType(MultipartBody.FORM)
-                        .addFormDataPart("prompt", prompt) // Dùng prompt từ người dùng
-                        .build();
+        executorService.execute(() -> {
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("prompt", prompt)
+                    .build();
 
-                Request request = new Request.Builder()
-                        .url(API_URL)
-                        .header("x-api-key", CLIPDROP_API_KEY)
-                        .post(requestBody)
-                        .build();
+            Request request = new Request.Builder()
+                    .url(API_URL)
+                    .header("x-api-key", CLIPDROP_API_KEY)
+                    .post(requestBody)
+                    .build();
 
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        e.printStackTrace();
-                        mainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressBar.setVisibility(View.GONE);
-                                tvStatus.setText("Lỗi: " + e.getMessage());
-                                Toast.makeText(CreateImgActivity.this, "Lỗi khi lấy ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                btnFetchImage.setEnabled(true);
-                                etPrompt.setEnabled(true); // Bật lại EditText
-                            }
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                    mainHandler.post(() -> {
+                        // --- SỬA ĐỔI: Xử lý lỗi ---
+                        progressBar.setVisibility(View.GONE);
+                        tvStatus.setText("Lỗi: " + e.getMessage());
+                        Toast.makeText(CreateImgActivity.this, "Lỗi khi lấy ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        btnFetchImage.setEnabled(true);
+                        etPrompt.setEnabled(true);
+                        // Khi lỗi, có thể hiện lại slideshow
+                        exampleImagesViewPager.setVisibility(View.VISIBLE);
+                        startAutoSlider();
+                    });
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful() && response.body() != null) {
+                        currentImageData = response.body().bytes();
+                        mainHandler.post(() -> {
+                            // --- SỬA ĐỔI: Xử lý thành công ---
+                            progressBar.setVisibility(View.GONE);
+                            tvStatus.setVisibility(View.GONE);
+
+                            Glide.with(CreateImgActivity.this)
+                                    .load(currentImageData)
+                                    .into(imageView);
+
+                            imageView.setVisibility(View.VISIBLE);
+                            Toast.makeText(CreateImgActivity.this, "Tải ảnh thành công!", Toast.LENGTH_SHORT).show();
+                            btnFetchImage.setEnabled(true);
+                            etPrompt.setEnabled(true);
+                            btnSave.setEnabled(true);
+                        });
+                    } else {
+                        final String errorMessage = response.body() != null ? response.body().string() : "Lỗi không xác định";
+                        mainHandler.post(() -> {
+                            // --- SỬA ĐỔI: Xử lý lỗi API ---
+                            progressBar.setVisibility(View.GONE);
+                            tvStatus.setText("Lỗi API: " + response.code() + " - " + errorMessage);
+                            Toast.makeText(CreateImgActivity.this, "Lỗi API: " + response.code() + "\n" + errorMessage, Toast.LENGTH_LONG).show();
+                            btnFetchImage.setEnabled(true);
+                            etPrompt.setEnabled(true);
+                            // Khi lỗi, có thể hiện lại slideshow
+                            exampleImagesViewPager.setVisibility(View.VISIBLE);
+                            startAutoSlider();
                         });
                     }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        if (response.isSuccessful() && response.body() != null) {
-                            currentImageData = response.body().bytes();
-
-                            mainHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    progressBar.setVisibility(View.GONE);
-                                    tvStatus.setVisibility(View.GONE);
-
-                                    Glide.with(CreateImgActivity.this)
-                                            .load(currentImageData)
-                                            .into(imageView);
-
-                                    imageView.setVisibility(View.VISIBLE);
-                                    Toast.makeText(CreateImgActivity.this, "Tải ảnh thành công!", Toast.LENGTH_SHORT).show();
-                                    btnFetchImage.setEnabled(true);
-                                    etPrompt.setEnabled(true); // Bật lại EditText
-                                    btnSave.setEnabled(true);
-                                }
-                            });
-                        } else {
-                            final String errorMessage = response.body() != null ? response.body().string() : "Lỗi không xác định";
-                            mainHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    progressBar.setVisibility(View.GONE);
-                                    tvStatus.setText("Lỗi API: " + response.code() + " - " + errorMessage);
-                                    Toast.makeText(CreateImgActivity.this, "Lỗi API: " + response.code() + "\n" + errorMessage, Toast.LENGTH_LONG).show();
-                                    btnFetchImage.setEnabled(true);
-                                    etPrompt.setEnabled(true); // Bật lại EditText
-                                }
-                            });
-                        }
-                        if (response.body() != null) {
-                            response.body().close();
-                        }
+                    if (response.body() != null) {
+                        response.body().close();
                     }
-                });
-            }
+                }
+            });
         });
+    }
+
+    private void startAutoSlider() {
+        // Hủy timer cũ nếu có để tránh chạy nhiều timer cùng lúc
+        if (slideTimer != null) {
+            slideTimer.cancel();
+        }
+
+        Runnable sliderRunnable = () -> {
+            int currentItem = exampleImagesViewPager.getCurrentItem();
+            if (exampleImagesAdapter.getItemCount() > 0) {
+                if (currentItem == exampleImagesAdapter.getItemCount() - 1) {
+                    exampleImagesViewPager.setCurrentItem(0);
+                } else {
+                    exampleImagesViewPager.setCurrentItem(currentItem + 1);
+                }
+            }
+        };
+
+        slideTimer = new Timer();
+        slideTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mainHandler.post(sliderRunnable);
+            }
+        }, 3000, 3000); // Bắt đầu sau 3s, lặp lại mỗi 3s
     }
 
     @Override
@@ -254,6 +316,9 @@ public class CreateImgActivity extends AppCompatActivity {
         super.onDestroy();
         if (executorService != null) {
             executorService.shutdownNow();
+        }
+        if (slideTimer != null) {
+            slideTimer.cancel();
         }
     }
 }
