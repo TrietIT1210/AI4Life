@@ -7,6 +7,6 @@
     <string name="createAnime_title">Anime cực chất</string>
     <string name="createMeme_title">Tạo meme siêu dị</string>
     <string name="createMeme_desc">Lưu trữ meme cực kì hài hước</string>
-    <string name="textView_welcomeText">Chào mừng bạn trở lại</string>
+    <string name="textView_welcomeText">Chào mừng đến với AI4Life</string>
     <string name="textView_requestRemain">Lượt request còn lại của bạn</string>
 </resources>

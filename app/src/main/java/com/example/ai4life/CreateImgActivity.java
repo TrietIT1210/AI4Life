@@ -308,7 +308,7 @@ public class CreateImgActivity extends AppCompatActivity {
             public void run() {
                 mainHandler.post(sliderRunnable);
             }
-        }, 3000, 3000); // Bắt đầu sau 3s, lặp lại mỗi 3s
+        }, 2000, 2000);
     }
 
     @Override

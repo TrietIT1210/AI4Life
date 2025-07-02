@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 handler.post(sliderRunable);
             }
-        }, 3000, 3000);
+        }, 2000, 2000);
     }
 
     @Override
