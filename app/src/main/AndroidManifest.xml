@@ -2,17 +2,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Quyền truy cập mạng để gọi API -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Quyền đọc bộ nhớ cho Android 12 trở xuống -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+
+    <!-- Quyền đọc file ảnh cho Android 13 trở lên -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Quyền ghi bộ nhớ cho các phiên bản cũ (để lưu ảnh) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
+
     <application
         android:allowBackup="true"
-        android:requestLegacyExternalStorage="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -20,27 +28,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AI4Life"
-        tools:targetApi="31"
-        android:attributionTags="ai4life"
-        >
+        tools:targetApi="31">
+
+        <!-- Khai báo các Activity của bạn -->
         <activity
-            android:name=".ResultRemoveBG"
+            android:name=".CreateAnimeActivity"
             android:exported="false" />
         <activity
             android:name=".RemoveBackgroundActivity"
             android:exported="false" />
         <activity
+            android:name=".CreateImgActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ResultRemoveBG"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".CreateImgActivity">
 
-        </activity>
     </application>
 
 </manifest>

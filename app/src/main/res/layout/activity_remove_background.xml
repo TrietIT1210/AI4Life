@@ -61,13 +61,14 @@
             android:layout_height="match_parent">
 
             <!-- VideoView cho sinh động (hiển thị ban đầu) -->
+
+            <!-- ProgressBar khi đang xử lý -->
             <VideoView
                 android:id="@+id/videoView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center" />
 
-            <!-- ProgressBar khi đang xử lý -->
             <ProgressBar
                 android:id="@+id/progressBarRemoveBg"
                 android:layout_width="wrap_content"

@@ -18,6 +18,7 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
     CardView cardCreateImage;
     CardView cardRemoveBackground;
+    CardView cardCreateAnime;
     private ViewPager2 newsViewPager;
     private NewsAdapter newsAdapter;
     private List<NewsItem> newsItemList;
@@ -62,8 +63,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        cardCreateAnime = findViewById(R.id.cardCreateAnime);
+        cardCreateAnime.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, CreateAnimeActivity.class);
+            startActivity(intent);
+        });
     }
-
     public void setupAutoSlide() {
         sliderRunable = () -> {
             int currentItem = newsViewPager.getCurrentItem();
