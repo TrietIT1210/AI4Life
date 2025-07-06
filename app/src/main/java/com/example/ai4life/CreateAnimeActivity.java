@@ -27,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,7 +103,18 @@ public class CreateAnimeActivity extends AppCompatActivity {
         btnStart = findViewById(R.id.btnStart);
         progressBar = findViewById(R.id.progressBar);
 
+        loadInitialGif();
+
         setupClickListeners();
+    }
+
+    private void loadInitialGif() {
+        // Thay 'anime_loading' bằng tên file GIF của bạn
+        Glide.with(this)
+                .asGif()
+                .load(R.drawable.anime_generator)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE) // Tối ưu cho việc load GIF từ drawable
+                .into(ivResult);
     }
 
     private void setupClickListeners() {
@@ -170,12 +182,12 @@ public class CreateAnimeActivity extends AppCompatActivity {
                         .setType(MultipartBody.FORM)
                         .addFormDataPart("file", "image.jpg", imageRequestBody)
                         .addFormDataPart("prompt", prompt + ", anime style")
-                        .addFormDataPart("negative_prompt", "ugly, blurry, low quality, deformed")
                         .addFormDataPart("strength", "0.75")
                         .build();
 
                 Request request = new Request.Builder()
-                        .url("https://api.segmind.com/v1/sdxl-img2img")
+                        .url("https://api.segmind.com/v1/sd1.5-img2img")
+                        //.url("https://api.segmind.com/v1/sdxl-img2img") api thay the neu server bận
                         .header("x-api-key", API_KEY)
                         .post(requestBody)
                         .build();

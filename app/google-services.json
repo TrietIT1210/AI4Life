@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "293412626298",
+    "project_id": "ai4life-app",
+    "storage_bucket": "ai4life-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293412626298:android:2bd8f9ba95c729a4a900c3",
+        "android_client_info": {
+          "package_name": "com.example.ai4life"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABd4ZXUKK1XKmrnzESjBbA1nD2K9DPmQo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

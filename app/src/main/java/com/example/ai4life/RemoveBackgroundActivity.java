@@ -37,7 +37,7 @@ public class RemoveBackgroundActivity extends AppCompatActivity {
     private VideoView videoView;
     private Button btnUploadImage, btnBackToHomePage;
 
-    private static final String REMOVE_BG_API_KEY = "kHh86zN3EBpYgWjcHRXErS5E";
+    private static final String REMOVE_BG_API_KEY = "aa4JQtmoY4vgx539hWSZQGtR";
 
     private RemoveBgService removeBgService;
     private ActivityResultLauncher<String> pickImageLauncher;
@@ -47,13 +47,7 @@ public class RemoveBackgroundActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_remove_background);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         videoView = findViewById(R.id.videoView);
         btnUploadImage = findViewById(R.id.btnUploadImage);

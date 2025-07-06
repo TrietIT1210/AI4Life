@@ -3,6 +3,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <color name="transparent">#00000000</color>
+
     <!--Color for Home Page-->
 
     <color name="home_page_background">#1C1C1E</color>
@@ -14,6 +16,7 @@
     <color name="home_page_bar_gray">#8E8E93</color>
     <color name="text_secondary_dark">#8E8E93</color>
     <color name="navigationBar_color">#9a78df</color>
+    <color name="logout_red">#FF5252</color>
 
     <!--Mau cho giao dien create image-->
     <color name="dopop_background">#000000</color>
