@@ -24,7 +24,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.bumptech.glide.Glide;
@@ -66,6 +65,7 @@ public class CreateImgActivity extends AppCompatActivity {
     private NewsAdapter exampleImagesAdapter;
     private List<NewsItem> exampleImageList;
     private Timer slideTimer;
+    private LoadingDialog loadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,11 +87,34 @@ public class CreateImgActivity extends AppCompatActivity {
         exampleImagesAdapter = new NewsAdapter(exampleImageList);
         exampleImagesViewPager.setAdapter(exampleImagesAdapter);
         startAutoSlider();
+
         ivBack.setOnClickListener(v -> finish());
+
         btnFetchImage.setOnClickListener(v -> fetchImage());
+
+        loadingDialog = new LoadingDialog(this);
+
         btnSave.setOnClickListener(v -> {
             if (currentImageData != null) {
                 saveImageToGallery();
+
+                loadingDialog.startLoadingDialog("Đang lưu vào lịch sử...");
+                Bitmap bitmap = BitmapFactory.decodeByteArray(currentImageData, 0, currentImageData.length);
+                String prompt = etPrompt.getText().toString().trim();
+
+                LocalHistoryHelper.saveImageToHistory(this, bitmap, prompt, "text-to-image", new LocalHistoryHelper.SaveListener() {
+                    @Override
+                    public void onSaveComplete() {
+                        loadingDialog.dismissDialog();
+                        showInfoDialog("Thành công", "Đã lưu ảnh vào lịch sử của bạn.");
+                    }
+
+                    @Override
+                    public void onSaveFailed(Exception e) {
+                        loadingDialog.dismissDialog();
+                        showErrorDialog("Lỗi", "Không thể lưu vào lịch sử: " + e.getMessage());
+                    }
+                });
             } else {
                 showErrorDialog("Lỗi", "Không có ảnh để lưu.");
             }
@@ -288,6 +311,14 @@ public class CreateImgActivity extends AppCompatActivity {
         dialog.setTitle(title);
         dialog.setMessage(message);
         dialog.setConfirmButton("Đã hiểu", v -> dialog.dismiss());
+        dialog.show();
+    }
+    private void showInfoDialog(String title, String message) {
+        CustomStatusDialog dialog = new CustomStatusDialog(this);
+        dialog.setDialogType(CustomStatusDialog.DialogType.SUCCESS);
+        dialog.setTitle(title);
+        dialog.setMessage(message);
+        dialog.setConfirmButton("OK", v -> dialog.dismiss());
         dialog.show();
     }
 }

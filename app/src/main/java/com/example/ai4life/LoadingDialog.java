@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.widget.TextView;
 
 public class LoadingDialog {
 
@@ -13,14 +14,24 @@ public class LoadingDialog {
         activity = myActivity;
     }
 
-    void startLoadingDialog() {
+    void startLoadingDialog(String message) {
         dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_loading);
+
+        TextView tvLoadingMessage = dialog.findViewById(R.id.tvLoadingMessage);
+        if (message != null && !message.isEmpty()) {
+            tvLoadingMessage.setText(message);
+        }
+
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
         dialog.setCancelable(false);
         dialog.show();
+    }
+
+    void startLoadingDialog() {
+        startLoadingDialog("Đang tải...");
     }
 
     void dismissDialog() {

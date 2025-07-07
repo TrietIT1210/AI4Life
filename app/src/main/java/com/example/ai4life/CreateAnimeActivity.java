@@ -44,15 +44,21 @@ public class CreateAnimeActivity extends AppCompatActivity {
     private EditText etPrompt;
     private Button btnSelectImage, btnStart;
     private LottieAnimationView progressBar;
+    private LoadingDialog loadingDialog;
     private Uri selectedImageUri = null;
     private Bitmap resultBitmap = null;
 
-    private final OkHttpClient client = new OkHttpClient.Builder().connectTimeout(300, TimeUnit.SECONDS).writeTimeout(300, TimeUnit.SECONDS).readTimeout(300, TimeUnit.SECONDS).build();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(300, TimeUnit.SECONDS)
+            .writeTimeout(300, TimeUnit.SECONDS)
+            .readTimeout(300, TimeUnit.SECONDS)
+            .build();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private static final String API_KEY = "SG_3c8342b3a826d9da";
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
         if (isGranted) {
             openGallery();
         } else {
@@ -60,7 +66,8 @@ public class CreateAnimeActivity extends AppCompatActivity {
         }
     });
 
-    private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    private final ActivityResultLauncher<Intent> pickImageLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == RESULT_OK && result.getData() != null) {
             selectedImageUri = result.getData().getData();
             Glide.with(this).load(selectedImageUri).into(ivResult);
@@ -83,6 +90,42 @@ public class CreateAnimeActivity extends AppCompatActivity {
 
         loadInitialGif();
         setupClickListeners();
+        loadingDialog = new LoadingDialog(this);
+
+        ivDownload.setOnClickListener(v -> {
+            if (resultBitmap != null) {
+                saveImageToGallery(resultBitmap);
+
+                loadingDialog.startLoadingDialog("Đang lưu vào lịch sử...");
+                String prompt = etPrompt.getText().toString();
+
+                LocalHistoryHelper.saveImageToHistory(this, resultBitmap, prompt, "anime", new LocalHistoryHelper.SaveListener() {
+                    @Override
+                    public void onSaveComplete() {
+                        loadingDialog.dismissDialog();
+                        showInfoDialog("Thành công", "Đã lưu ảnh vào lịch sử của bạn.");
+                    }
+
+                    @Override
+                    public void onSaveFailed(Exception e) {
+                        loadingDialog.dismissDialog();
+                        showErrorDialog("Lỗi", "Không thể lưu vào lịch sử: " + e.getMessage());
+                    }
+                });
+            } else {
+                showErrorDialog("Lỗi", "Không có ảnh để lưu.");
+            }
+        });
+
+    }
+
+    private void showInfoDialog(String title, String message) {
+        CustomStatusDialog dialog = new CustomStatusDialog(this);
+        dialog.setDialogType(CustomStatusDialog.DialogType.SUCCESS);
+        dialog.setTitle(title);
+        dialog.setMessage(message);
+        dialog.setConfirmButton("OK", v -> dialog.dismiss());
+        dialog.show();
     }
 
     private void loadInitialGif() {
@@ -93,7 +136,6 @@ public class CreateAnimeActivity extends AppCompatActivity {
         ivBack.setOnClickListener(v -> finish());
         btnSelectImage.setOnClickListener(v -> checkPermissionAndOpenGallery());
         btnStart.setOnClickListener(v -> startImageGeneration());
-        ivDownload.setOnClickListener(v -> saveResultImage());
     }
 
     private void checkPermissionAndOpenGallery() {

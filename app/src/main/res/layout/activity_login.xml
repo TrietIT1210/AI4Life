@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Let's Sign In."
+        android:text="Let's sign in!"
         android:textColor="#1F0055"
         android:textSize="32sp"
         android:textStyle="bold"
@@ -36,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Experience AI Health Assistant for everyone."
+        android:text="Experience new features with AI"
         android:textColor="#6E6E82"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -50,7 +50,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="40dp"
         android:layout_marginEnd="32dp"
-        android:text="Email Address"
+        android:text="Email"
         android:textColor="#1F0055"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -156,7 +156,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- ================== KHỐI CODE ĐÃ ĐƯỢC SỬA LẠI ================== -->
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/progressBarLogin"
         android:layout_width="match_parent"
@@ -170,6 +169,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible"/>
-    <!-- ===================================================================== -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -20,7 +20,6 @@ import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 public class ResultRemoveBG extends AppCompatActivity {
@@ -30,6 +29,7 @@ public class ResultRemoveBG extends AppCompatActivity {
     private Button btnBack, btnSave;
     private Uri imageUri;
     private File tempResultFile;
+    private LoadingDialog loadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +64,43 @@ public class ResultRemoveBG extends AppCompatActivity {
         }
 
         btnBack.setOnClickListener(v -> onBackPressed());
-        btnSave.setOnClickListener(v -> saveImageToGallery());
         ivBack.setOnClickListener(v -> onBackPressed());
         btnSave.setEnabled(false);
+        loadingDialog = new LoadingDialog(this);
+
+        btnSave.setOnClickListener(v -> {
+            if (imageViewResult.getDrawable() != null) {
+                saveImageToGallery();
+
+                loadingDialog.startLoadingDialog("Đang lưu vào lịch sử...");
+                Bitmap bitmap = ((BitmapDrawable) imageViewResult.getDrawable()).getBitmap();
+
+                LocalHistoryHelper.saveImageToHistory(this, bitmap, "Ảnh đã xóa nền", "remove-bg", new LocalHistoryHelper.SaveListener() {
+                    @Override
+                    public void onSaveComplete() {
+                        loadingDialog.dismissDialog();
+                        showInfoDialog("Thành công", "Đã lưu ảnh vào lịch sử của bạn.");
+                    }
+
+                    @Override
+                    public void onSaveFailed(Exception e) {
+                        loadingDialog.dismissDialog();
+                        showErrorDialog("Lỗi", "Không thể lưu vào lịch sử: " + e.getMessage());
+                    }
+                });
+            } else {
+                showErrorDialog("Lỗi", "Không có ảnh để lưu.");
+            }
+        });
+    }
+
+    private void showInfoDialog(String title, String message) {
+        CustomStatusDialog dialog = new CustomStatusDialog(this);
+        dialog.setDialogType(CustomStatusDialog.DialogType.SUCCESS);
+        dialog.setTitle(title);
+        dialog.setMessage(message);
+        dialog.setConfirmButton("OK", v -> dialog.dismiss());
+        dialog.show();
     }
 
     private void saveImageToGallery() {
