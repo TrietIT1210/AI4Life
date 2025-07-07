@@ -12,11 +12,11 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginTop="80dp"
+        android:contentDescription="logo"
         android:src="@drawable/ic_logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="logo" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvTitle"
@@ -155,5 +155,21 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- ================== KHỐI CODE ĐÃ ĐƯỢC SỬA LẠI ================== -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/progressBarLogin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:lottie_rawRes="@raw/loading_animation"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible"/>
+    <!-- ===================================================================== -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

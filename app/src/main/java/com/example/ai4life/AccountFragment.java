@@ -2,27 +2,26 @@ package com.example.ai4life;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatButton;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class AccountFragment extends Fragment {
 
-    private TextView tvUserEmail, tvUserId;
-    private AppCompatButton btnLogout;
     private FirebaseAuth mAuth;
+    private Button btnLogout;
+    private TextView tvUserEmail;
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_account, container, false);
     }
 
@@ -31,29 +30,31 @@ public class AccountFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mAuth = FirebaseAuth.getInstance();
-        tvUserEmail = view.findViewById(R.id.tvUserEmail);
-        tvUserId = view.findViewById(R.id.tvUserId);
         btnLogout = view.findViewById(R.id.btnLogout);
+        tvUserEmail = view.findViewById(R.id.tvUserEmail);
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String email = currentUser.getEmail();
-            String uid = currentUser.getUid();
-
-            tvUserEmail.setText(email != null ? email : "No Email");
-            tvUserId.setText("UID: " + uid);
+            tvUserEmail.setText(currentUser.getEmail());
         }
 
-        btnLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            Toast.makeText(getActivity(), "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+        btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
+    }
 
+    private void showLogoutConfirmationDialog() {
+        CustomStatusDialog dialog = new CustomStatusDialog(requireContext());
+        dialog.setDialogType(CustomStatusDialog.DialogType.DELETE);
+        dialog.setTitle("Đăng xuất");
+        dialog.setMessage("Bạn có chắc chắn muốn đăng xuất?");
+        dialog.setConfirmButton("Xác nhận", v -> {
+            dialog.dismiss();
+            mAuth.signOut();
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            if (getActivity() != null) {
-                getActivity().finish();
-            }
+            requireActivity().finish();
         });
+        dialog.setCancelButton("Hủy", v -> dialog.dismiss());
+        dialog.show();
     }
 }

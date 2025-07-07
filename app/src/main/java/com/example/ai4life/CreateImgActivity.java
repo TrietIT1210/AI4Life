@@ -20,22 +20,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.airbnb.lottie.LottieAnimationView;
 import com.bumptech.glide.Glide;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,24 +40,28 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class CreateImgActivity extends AppCompatActivity {
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
     private byte[] currentImageData;
     private Button btnFetchImage;
-    private Button btnBack;
+    private ImageView ivBack;
     private Button btnSave;
     private ImageView imageView;
-    private ProgressBar progressBar;
-    private TextView tvStatus;
-    private EditText etPrompt; // Thêm EditText
-
+    private LottieAnimationView progressBar;
+    private EditText etPrompt;
     private static final String CLIPDROP_API_KEY = "14397954d114e92139b3028b68d3ecda23dfdcce86fd804706279d2047c1682bb489f0928d4046df586f5b94632561d9";
     private static final String API_URL = "https://clipdrop-api.co/text-to-image/v1";
-
     private OkHttpClient client;
     private ExecutorService executorService;
     private Handler mainHandler;
-
     private ViewPager2 exampleImagesViewPager;
     private NewsAdapter exampleImagesAdapter;
     private List<NewsItem> exampleImageList;
@@ -75,170 +71,138 @@ public class CreateImgActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_img_activity);
-        // Ánh xạ các thành phần UI
+        ivBack = findViewById(R.id.ivBack);
         btnFetchImage = findViewById(R.id.btnFetchImg);
         btnSave = findViewById(R.id.btnSaveImg);
         imageView = findViewById(R.id.ivPicture);
         progressBar = findViewById(R.id.pbCreateImg);
-        tvStatus = findViewById(R.id.tvStatusCreateImg);
         etPrompt = findViewById(R.id.etPromptCreateImg);
         exampleImagesViewPager = findViewById(R.id.exampleImagesViewPager);
-
         client = new OkHttpClient();
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
-
         btnSave.setEnabled(false);
-
         exampleImageList = new ArrayList<>();
         exampleImageList.add(new NewsItem("Một con mèo phi hành gia trên sao hỏa", "https://picsum.photos/800/400?random=4"));
-        exampleImageList.add(new NewsItem("Rừng cây phát sáng vào ban đêm", "https://picsum.photos/800/400?random=5"));
-        exampleImageList.add(new NewsItem("Thành phố tương lai dưới nước", "https://picsum.photos/800/400?random=6"));
-        exampleImageList.add(new NewsItem("Robot tự học vẽ tranh như Picasso", "https://picsum.photos/800/400?random=7"));
-        exampleImageList.add(new NewsItem("Trạm không gian quay quanh sao Thổ", "https://picsum.photos/800/400?random=8"));
-        exampleImageList.add(new NewsItem("AI phát hiện sinh vật biển chưa từng thấy", "https://picsum.photos/800/400?random=9"));
-        exampleImageList.add(new NewsItem("Người máy nấu ăn 5 món trong 10 phút", "https://picsum.photos/800/400?random=10"));
-        exampleImageList.add(new NewsItem("Ngôi làng nổi trên mây", "https://picsum.photos/800/400?random=11"));
-        exampleImageList.add(new NewsItem("Cửa hàng ảo dùng kính AR đầu tiên", "https://picsum.photos/800/400?random=12"));
-        exampleImageList.add(new NewsItem("Khám phá khu rừng số hóa bởi drone", "https://picsum.photos/800/400?random=13"));
-        exampleImageList.add(new NewsItem("Ô tô bay đầu tiên được thử nghiệm", "https://picsum.photos/800/400?random=14"));
-        exampleImageList.add(new NewsItem("Trí tuệ nhân tạo chơi đàn cổ Việt Nam", "https://picsum.photos/800/400?random=15"));
-        exampleImageList.add(new NewsItem("Kính thực tế ảo thay thế màn hình máy tính", "https://picsum.photos/800/400?random=16"));
-
-
         exampleImagesAdapter = new NewsAdapter(exampleImageList);
         exampleImagesViewPager.setAdapter(exampleImagesAdapter);
-
-        // Bắt đầu tự động trượt
         startAutoSlider();
-
-        btnFetchImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fetchImage();
-            }
-        });
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentImageData != null) {
-                    saveImageToGallery(currentImageData);
-                } else {
-                    Toast.makeText(CreateImgActivity.this, "Không có ảnh để lưu.", Toast.LENGTH_SHORT).show();
-                }
+        ivBack.setOnClickListener(v -> finish());
+        btnFetchImage.setOnClickListener(v -> fetchImage());
+        btnSave.setOnClickListener(v -> {
+            if (currentImageData != null) {
+                saveImageToGallery();
+            } else {
+                showErrorDialog("Lỗi", "Không có ảnh để lưu.");
             }
         });
     }
-    private void saveImageToGallery(byte[] imageData) {
-        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+
+    private void saveImageToGallery() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            saveImageQAndAbove();
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
+            } else {
+                saveImageLegacy();
+            }
+        }
+    }
+
+    private void saveImageQAndAbove() {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(currentImageData, 0, currentImageData.length);
         if (bitmap == null) {
-            Toast.makeText(this, "Không thể giải mã ảnh.", Toast.LENGTH_SHORT).show();
+            showErrorDialog("Lỗi", "Không thể giải mã hình ảnh.");
             return;
         }
-
-        String fileName = "Image_" + System.currentTimeMillis() + ".png"; // Tên file duy nhất
+        String fileName = "Image_" + System.currentTimeMillis() + ".png";
         ContentResolver resolver = getContentResolver();
-        ContentValues contentValues = new ContentValues();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // Android 10 (API 29) trở lên
-            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "YourAppImages"); // Tên thư mục con trong Pictures
-            contentValues.put(MediaStore.Images.Media.IS_PENDING, 1); // Đánh dấu là đang ghi
-
-            Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-            if (imageUri != null) {
-                try (OutputStream fos = resolver.openOutputStream(imageUri)) {
-                    if (fos != null) {
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                        contentValues.clear();
-                        contentValues.put(MediaStore.Images.Media.IS_PENDING, 0); // Bỏ đánh dấu pending
-                        resolver.update(imageUri, contentValues, null, null);
-                        Toast.makeText(this, "Đã lưu ảnh vào thư viện!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, "Không thể mở luồng ghi ảnh.", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (IOException e) {
-                    Toast.makeText(this, "Lỗi khi lưu ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    Log.e("SaveImage", "Error saving image (Q+): " + e.getMessage());
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "AI4Life");
+        values.put(MediaStore.Images.Media.IS_PENDING, 1);
+        Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        if (imageUri != null) {
+            try (OutputStream fos = resolver.openOutputStream(imageUri)) {
+                if (fos != null) {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                    values.clear();
+                    values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                    resolver.update(imageUri, values, null, null);
+                    showSaveSuccessDialog();
                 }
-            } else {
-                Toast.makeText(this, "Không thể tạo URI để lưu ảnh.", Toast.LENGTH_SHORT).show();
-            }
-        } else { // Dưới Android 10 (API 28 trở xuống)
-            String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "YourAppImages";
-            File appSpecificAlbum = new File(imagesDir);
-            if (!appSpecificAlbum.exists()) {
-                appSpecificAlbum.mkdirs();
-            }
-            File imageFile = new File(appSpecificAlbum, fileName);
-
-            try (FileOutputStream fos = new FileOutputStream(imageFile)) {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                Toast.makeText(this, "Đã lưu ảnh vào thư viện!", Toast.LENGTH_SHORT).show();
-
-                // Cần làm mới MediaStore để ảnh hiển thị ngay lập tức
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.DATA, imageFile.getAbsolutePath());
-                values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-                resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
             } catch (IOException e) {
-                Toast.makeText(this, "Lỗi khi lưu ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                Log.e("SaveImage", "Error saving image (<Q): " + e.getMessage());
+                showErrorDialog("Lỗi Lưu Ảnh", e.getMessage());
             }
         }
     }
+
+    private void saveImageLegacy() {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(currentImageData, 0, currentImageData.length);
+        if (bitmap == null) {
+            showErrorDialog("Lỗi", "Không thể giải mã hình ảnh.");
+            return;
+        }
+        String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "AI4Life";
+        File appDir = new File(imagesDir);
+        if (!appDir.exists()) {
+            appDir.mkdirs();
+        }
+        String fileName = "Image_" + System.currentTimeMillis() + ".png";
+        File imageFile = new File(appDir, fileName);
+        try (FileOutputStream fos = new FileOutputStream(imageFile)) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, imageFile.getAbsolutePath());
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+            getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            showSaveSuccessDialog();
+        } catch (IOException e) {
+            showErrorDialog("Lỗi Lưu Ảnh", e.getMessage());
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                saveImageLegacy();
+            } else {
+                showErrorDialog("Quyền bị từ chối", "Không thể lưu ảnh nếu không cấp quyền ghi vào bộ nhớ.");
+            }
+        }
+    }
+
     private void fetchImage() {
         String prompt = etPrompt.getText().toString().trim();
         if (TextUtils.isEmpty(prompt)) {
-            Toast.makeText(this, "Vui lòng nhập mô tả ảnh!", Toast.LENGTH_SHORT).show();
+            showErrorDialog("Thiếu thông tin", "Vui lòng nhập mô tả cho ảnh.");
             return;
         }
-
-        // --- SỬA ĐỔI: Quản lý giao diện ---
-        // Dừng và ẩn slideshow
         if (slideTimer != null) {
             slideTimer.cancel();
             slideTimer = null;
         }
         exampleImagesViewPager.setVisibility(View.GONE);
-
-        // Ẩn ảnh cũ (nếu có) và hiển thị ProgressBar
         imageView.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
-        tvStatus.setVisibility(View.VISIBLE);
-        tvStatus.setText("Đang tạo ảnh với prompt:\n\"" + prompt + "\"");
-
-        // Vô hiệu hóa các nút
         btnFetchImage.setEnabled(false);
         etPrompt.setEnabled(false);
         btnSave.setEnabled(false);
-
         executorService.execute(() -> {
-            RequestBody requestBody = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("prompt", prompt)
-                    .build();
-
-            Request request = new Request.Builder()
-                    .url(API_URL)
-                    .header("x-api-key", CLIPDROP_API_KEY)
-                    .post(requestBody)
-                    .build();
-
+            RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("prompt", prompt).build();
+            Request request = new Request.Builder().url(API_URL).header("x-api-key", CLIPDROP_API_KEY).post(requestBody).build();
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
                     mainHandler.post(() -> {
-                        // --- SỬA ĐỔI: Xử lý lỗi ---
                         progressBar.setVisibility(View.GONE);
-                        tvStatus.setText("Lỗi: " + e.getMessage());
-                        Toast.makeText(CreateImgActivity.this, "Lỗi khi lấy ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        showErrorDialog("Lỗi Mạng", "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối.");
                         btnFetchImage.setEnabled(true);
                         etPrompt.setEnabled(true);
-                        // Khi lỗi, có thể hiện lại slideshow
                         exampleImagesViewPager.setVisibility(View.VISIBLE);
                         startAutoSlider();
                     });
@@ -249,16 +213,9 @@ public class CreateImgActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         currentImageData = response.body().bytes();
                         mainHandler.post(() -> {
-                            // --- SỬA ĐỔI: Xử lý thành công ---
                             progressBar.setVisibility(View.GONE);
-                            tvStatus.setVisibility(View.GONE);
-
-                            Glide.with(CreateImgActivity.this)
-                                    .load(currentImageData)
-                                    .into(imageView);
-
+                            Glide.with(CreateImgActivity.this).load(currentImageData).into(imageView);
                             imageView.setVisibility(View.VISIBLE);
-                            Toast.makeText(CreateImgActivity.this, "Tải ảnh thành công!", Toast.LENGTH_SHORT).show();
                             btnFetchImage.setEnabled(true);
                             etPrompt.setEnabled(true);
                             btnSave.setEnabled(true);
@@ -266,13 +223,10 @@ public class CreateImgActivity extends AppCompatActivity {
                     } else {
                         final String errorMessage = response.body() != null ? response.body().string() : "Lỗi không xác định";
                         mainHandler.post(() -> {
-                            // --- SỬA ĐỔI: Xử lý lỗi API ---
                             progressBar.setVisibility(View.GONE);
-                            tvStatus.setText("Lỗi API: " + response.code() + " - " + errorMessage);
-                            Toast.makeText(CreateImgActivity.this, "Lỗi API: " + response.code() + "\n" + errorMessage, Toast.LENGTH_LONG).show();
+                            showErrorDialog("Lỗi API", "Lỗi: " + response.code() + ". " + errorMessage);
                             btnFetchImage.setEnabled(true);
                             etPrompt.setEnabled(true);
-                            // Khi lỗi, có thể hiện lại slideshow
                             exampleImagesViewPager.setVisibility(View.VISIBLE);
                             startAutoSlider();
                         });
@@ -286,14 +240,12 @@ public class CreateImgActivity extends AppCompatActivity {
     }
 
     private void startAutoSlider() {
-        // Hủy timer cũ nếu có để tránh chạy nhiều timer cùng lúc
         if (slideTimer != null) {
             slideTimer.cancel();
         }
-
         Runnable sliderRunnable = () -> {
-            int currentItem = exampleImagesViewPager.getCurrentItem();
             if (exampleImagesAdapter.getItemCount() > 0) {
+                int currentItem = exampleImagesViewPager.getCurrentItem();
                 if (currentItem == exampleImagesAdapter.getItemCount() - 1) {
                     exampleImagesViewPager.setCurrentItem(0);
                 } else {
@@ -301,24 +253,41 @@ public class CreateImgActivity extends AppCompatActivity {
                 }
             }
         };
-
         slideTimer = new Timer();
         slideTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 mainHandler.post(sliderRunnable);
             }
-        }, 2000, 2000);
+        }, 3000, 3000);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (executorService != null) {
-            executorService.shutdownNow();
-        }
         if (slideTimer != null) {
             slideTimer.cancel();
         }
+        if (executorService != null) {
+            executorService.shutdownNow();
+        }
+    }
+
+    private void showSaveSuccessDialog() {
+        CustomStatusDialog dialog = new CustomStatusDialog(this);
+        dialog.setDialogType(CustomStatusDialog.DialogType.SUCCESS);
+        dialog.setTitle("Đã lưu!");
+        dialog.setMessage("Ảnh của bạn đã được lưu thành công vào thư viện.");
+        dialog.setConfirmButton("OK", v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void showErrorDialog(String title, String message) {
+        CustomStatusDialog dialog = new CustomStatusDialog(this);
+        dialog.setDialogType(CustomStatusDialog.DialogType.WARNING);
+        dialog.setTitle(title);
+        dialog.setMessage(message);
+        dialog.setConfirmButton("Đã hiểu", v -> dialog.dismiss());
+        dialog.show();
     }
 }

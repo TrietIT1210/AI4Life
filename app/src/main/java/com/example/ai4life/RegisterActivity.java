@@ -8,11 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -21,15 +19,13 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText etEmail, etPassword, etConfirmPassword;
     private Button btnSignUp;
     private TextView tvSignIn;
+    private LottieAnimationView progressBar;
     private FirebaseAuth mAuth;
-    private LoadingDialog loadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
-        loadingDialog = new LoadingDialog(this);
 
         mAuth = FirebaseAuth.getInstance();
         etEmail = findViewById(R.id.etEmail);
@@ -37,6 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnSignUp = findViewById(R.id.btnSignUp);
         tvSignIn = findViewById(R.id.tvSignIn);
+        progressBar = findViewById(R.id.progressBarRegister);
 
         tvSignIn.setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
@@ -45,59 +42,62 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
         btnSignUp.setOnClickListener(v -> {
-            loadingDialog.startLoadingDialog();
+            progressBar.setVisibility(View.VISIBLE);
             String email, password, confirmPassword;
-            email = etEmail.getText().toString().trim();
-            password = etPassword.getText().toString().trim();
-            confirmPassword = etConfirmPassword.getText().toString().trim();
+            email = etEmail.getText().toString();
+            password = etPassword.getText().toString();
+            confirmPassword = etConfirmPassword.getText().toString();
 
-            if (TextUtils.isEmpty(email)) {
-                Toast.makeText(RegisterActivity.this, "Enter email", Toast.LENGTH_SHORT).show();
-                loadingDialog.dismissDialog();
-                return;
-            }
-            if (TextUtils.isEmpty(password)) {
-                Toast.makeText(RegisterActivity.this, "Enter password", Toast.LENGTH_SHORT).show();
-                loadingDialog.dismissDialog();
+            if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
+                progressBar.setVisibility(View.GONE);
+                showErrorDialog("Lỗi", "Vui lòng điền đầy đủ thông tin.");
                 return;
             }
             if (!password.equals(confirmPassword)) {
-                Toast.makeText(RegisterActivity.this, "Password not match", Toast.LENGTH_SHORT).show();
-                loadingDialog.dismissDialog();
+                progressBar.setVisibility(View.GONE);
+                showErrorDialog("Lỗi", "Mật khẩu xác nhận không khớp.");
                 return;
             }
 
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
-                        loadingDialog.dismissDialog();
+                        progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
-                            if (user !=  null) {
+                            if (user != null) {
                                 user.sendEmailVerification().addOnCompleteListener(emailTask -> {
-                                    if (emailTask.isSuccessful()) {
-                                        Toast.makeText(RegisterActivity.this, "Đăng ký thành công! Vui lòng kiểm tra email để xác thực.", Toast.LENGTH_LONG).show();
-                                    }
-                                    else {
-                                        Toast.makeText(RegisterActivity.this, "Gửi email xác thực thất bại.", Toast.LENGTH_SHORT).show();
-                                    }
+                                    mAuth.signOut();
+                                    showRegistrationSuccessDialog();
                                 });
                             }
-
-                            // Đăng xuất người dùng ra ngay sau khi đăng ký để buộc họ phải đăng nhập lại
-                            mAuth.signOut();
-
-                            // Chuyển về trang đăng nhập
-                            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                            startActivity(intent);
-                            finish();
-                        }
-                        else {
-                            // Hiển thị lỗi rõ ràng hơn
-                            Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " +
-                                    task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        } else {
+                            showErrorDialog("Đăng ký thất bại", task.getException().getMessage());
                         }
                     });
         });
+    }
 
+    private void showRegistrationSuccessDialog() {
+        CustomStatusDialog dialog = new CustomStatusDialog(this);
+        dialog.setDialogType(CustomStatusDialog.DialogType.SUCCESS);
+        dialog.setTitle("Hoàn tất!");
+        dialog.setMessage("Tài khoản của bạn đã được tạo. Vui lòng kiểm tra email để xác thực nhé.");
+        dialog.setConfirmButton("Về Đăng nhập", v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+            startActivity(intent);
+            finish();
+        });
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+
+    private void showErrorDialog(String title, String message) {
+        CustomStatusDialog dialog = new CustomStatusDialog(this);
+        dialog.setDialogType(CustomStatusDialog.DialogType.WARNING);
+        dialog.setTitle(title);
+        dialog.setMessage(message);
+        dialog.setConfirmButton("Đã hiểu", v -> dialog.dismiss());
+        dialog.show();
     }
 }

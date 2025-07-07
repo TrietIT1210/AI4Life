@@ -12,11 +12,11 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginTop="60dp"
+        android:contentDescription="logo"
         android:src="@drawable/ic_logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="logo"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvTitle"
@@ -43,7 +43,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
-    <!-- Email -->
     <TextView
         android:id="@+id/tvLabelEmail"
         android:layout_width="0dp"
@@ -74,7 +73,6 @@
         app:layout_constraintStart_toStartOf="@+id/tvLabelEmail"
         app:layout_constraintTop_toBottomOf="@+id/tvLabelEmail" />
 
-    <!-- Password -->
     <TextView
         android:id="@+id/tvLabelPassword"
         android:layout_width="0dp"
@@ -103,7 +101,6 @@
         app:layout_constraintStart_toStartOf="@+id/tvLabelPassword"
         app:layout_constraintTop_toBottomOf="@+id/tvLabelPassword" />
 
-    <!-- Password Confirmation -->
     <TextView
         android:id="@+id/tvLabelConfirmPassword"
         android:layout_width="0dp"
@@ -172,5 +169,19 @@
             android:textSize="14sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/progressBarRegister"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:lottie_rawRes="@raw/loading_animation"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
