@@ -1,12 +1,16 @@
 package com.example.ai4life;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +26,7 @@ import java.util.TimerTask;
 
 public class HomeFragment extends Fragment {
 
-    private CardView cardCreateImage, cardRemoveBackground, cardCreateAnime;
+    private CardView cardCreateImage, cardRemoveBackground, cardCreateAnime, cardCreateMeme;
     private ViewPager2 newsViewPager;
     private NewsAdapter newsAdapter;
     private List<NewsItem> newsItemList;
@@ -82,6 +86,12 @@ public class HomeFragment extends Fragment {
         cardCreateAnime = view.findViewById(R.id.cardCreateAnime);
         cardCreateAnime.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), CreateAnimeActivity.class);
+            startActivity(intent);
+        });
+
+        cardCreateMeme = view.findViewById(R.id.cardCreateMeme);
+        cardCreateMeme.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ComingSoonActivity.class);
             startActivity(intent);
         });
     }

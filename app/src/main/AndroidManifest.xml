@@ -49,6 +49,10 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".ComingSoonActivity"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>

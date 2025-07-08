@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -18,6 +19,7 @@ public class AccountFragment extends Fragment {
     private FirebaseAuth mAuth;
     private Button btnLogout;
     private TextView tvUserEmail;
+    private CardView cardUpgrade;
 
     @Nullable
     @Override
@@ -32,11 +34,17 @@ public class AccountFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         btnLogout = view.findViewById(R.id.btnLogout);
         tvUserEmail = view.findViewById(R.id.tvUserEmail);
+        cardUpgrade = view.findViewById(R.id.cardUpgrade);
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             tvUserEmail.setText(currentUser.getEmail());
         }
+
+        cardUpgrade.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ComingSoonActivity.class);
+            startActivity(intent);
+        });
 
         btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
     }
