@@ -83,7 +83,7 @@ public class CreateImgActivity extends AppCompatActivity {
         mainHandler = new Handler(Looper.getMainLooper());
         btnSave.setEnabled(false);
         exampleImageList = new ArrayList<>();
-        exampleImageList.add(new NewsItem("Một con mèo phi hành gia trên sao hỏa", "https://picsum.photos/800/400?random=4"));
+        exampleImageList.add(new NewsItem("Một con mèo phi hành gia trên sao hỏa", "https://picsum.photos/800/400?random=4", ""));
         exampleImagesAdapter = new NewsAdapter(exampleImageList);
         exampleImagesViewPager.setAdapter(exampleImagesAdapter);
         startAutoSlider();

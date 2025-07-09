@@ -56,11 +56,35 @@ public class HomeFragment extends Fragment {
         newsViewPager = view.findViewById(R.id.newsViewPager);
 
         newsItemList = new ArrayList<>();
-        newsItemList.add(new NewsItem("OpenAI ra mắt Sora", "https://picsum.photos/800/400?random=1"));
-        newsItemList.add(new NewsItem("Google giới thiệu Gemini", "https://picsum.photos/800/400?random=2"));
-        newsItemList.add(new NewsItem("NVIDIA công bố chip AI mới", "https://picsum.photos/800/400?random=3"));
-        newsItemList.add(new NewsItem("OpenAI phát triển mô hình AGI", "https://picsum.photos/800/400?random=4"));
-        newsItemList.add(new NewsItem("DeepSeek vừa được ra mắt!", "https://picsum.photos/800/400?random=5"));
+        newsItemList.add(new NewsItem(
+                "Tham vọng của các 'gã khổng lồ' với AI tạo sinh",
+                "https://picsum.photos/800/400?random=1",
+                "https://vnexpress.net/nhung-du-doan-cua-sam-altman-ve-cach-ai-thay-doi-the-gioi-4910575.html"
+        ));
+
+        newsItemList.add(new NewsItem(
+                "Bên trong siêu máy tính AI mạnh nhất thế giới",
+                "https://picsum.photos/800/400?random=2",
+                "https://vnexpress.net/sieu-tri-tue-nhan-tao-agi-dang-dan-hien-dien-4825386.html"
+        ));
+
+        newsItemList.add(new NewsItem(
+                "Apple thừa nhận tụt hậu về AI tạo sinh",
+                "https://picsum.photos/800/400?random=3",
+                "https://vnexpress.net/cac-nha-xuat-ban-that-vong-voi-apple-news-3945703.html"
+        ));
+
+        newsItemList.add(new NewsItem(
+                "Nvidia - từ gã khổng lồ game đến 'vua' AI",
+                "https://picsum.photos/800/400?random=4",
+                "https://vnexpress.net/cac-ceo-cong-nghe-dung-ai-the-nao-trong-doi-thuong-4907611.html"
+        ));
+
+        newsItemList.add(new NewsItem(
+                "Những ứng dụng AI tạo video từ văn bản",
+                "https://picsum.photos/800/400?random=5",
+                "https://vnexpress.net/nhung-mo-hinh-ai-tao-video-nhu-that-moi-ra-mat-4905329.html"
+        ));
 
         newsAdapter = new NewsAdapter(newsItemList);
         newsViewPager.setAdapter(newsAdapter);
